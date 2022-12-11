@@ -1,0 +1,30 @@
+import pyodbc 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+#connect to Database with SQL
+
+conn = pyodbc.connect('Driver={SQL Server};'
+                      'Server=DESKTOP-436VJH8;'
+                      'Database=BikeStores;'
+                      'Trusted_Connection=yes;')
+
+cursor = conn.cursor()
+cursor.execute('SELECT * FROM sales.orders')
+
+List = []
+for i in cursor:
+    List.append(i)
+
+###Transform the list into a Dataframe
+
+Dataframe = pd.DataFrame(list(map(np.ravel, List)))
+
+Dataframe.rename(columns={0: 'Order ID', 1: 'Customer ID',2: 'Order Status',3: 'Order Date',4: 'Required Date',5: 'Shipped Date',6: 'Store ID',7: 'Staff ID'}, inplace=True)
+
+print(Dataframe.head())
+
+###Get a DF with the amount of orders by Staff Id and Customer ID (combined)
+
+StaffMap = Dataframe.groupby(['Customer ID','Staff ID']).size().reset_index().rename(columns={0:'count'})
